@@ -2,11 +2,11 @@
 
 * Notes for openai whisper
 ** gpu tests
-running the ai with a gpu utilizes 100% of the gpu power on a 1060 6gb and pins a single cpu core at 100%
-4.5 minuet run-time using the medium size model on a 1060 6gb gpu on a 10 minuet podcast
-1.5 minuet run-time using the small size model with the same gpu and podcast
++ running the ai with a gpu utilizes 100% of the gpu power on a 1060 6gb and pins a single cpu core at 100%
++ 4.5 minuet run-time using the medium size model on a 1060 6gb gpu on a 10 minuet podcast
++ 1.5 minuet run-time using the small size model with the same gpu and podcast
 ** cpu tests
-running the ai using cpu only it utilizes the whole cpu in my tests ( pins all cores at 100% )
-my test machine is a VM virtualied using kvm and qemu and I have allocated 8 cpu threads to the cpu for the VM
-using the medium size model and the same podcast cpu only I had a wall-clock time of 41 minuets and a cpu time of 5.5 hours
-using the small size model and the same podcast cpu only I had a wall-clock time of 12 minuets and cpu time of 1.5 hours
++ running the ai using cpu only it utilizes the whole cpu in my tests ( pins all cores at 100% )
++ my test machine is a VM virtualied using kvm and qemu and I have allocated 8 cpu threads to the cpu for the VM
++ using the medium size model and the same podcast cpu only I had a wall-clock time of 41 minuets and a cpu time of 5.5 hours
++ using the small size model and the same podcast cpu only I had a wall-clock time of 12 minuets and cpu time of 1.5 hours
