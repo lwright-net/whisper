@@ -1,0 +1,141 @@
+#+title: Read Attachments
+#+author: Lane Wright
+
+* Testing some python code to read email attachemnts
+My goal is to be able to programmatically read an email and then extract an attachement and do something with that attachment.
+python luckily has some built-in libraries for handling emails.
+I'll be using the =imaplib= library in this example/test.
+pymotw.com/3/imaplib/index.html
+
+** Connect to an imap server
+
+In the block below we make a connection to the imap server.
+1. Read the config file to get the info we need for making the connection
+2. Reach out to the server
+3. Authenticate with the server and print the results to stdout
+
+#+BEGIN_SRC python :tangle imap_connect.py
+import imaplib
+import configparser
+
+def open_connection(verbose=False):
+    #Read the config
+    config = configparser.ConfigParser()
+    config.read('./py_read_mail.conf')
+
+    #Connect to server
+    hostname = config.get('server', 'hostname')
+    if verbose:
+        print('Connecting to', hostname)
+    connection = imaplib.IMAP4_SSL(hostname)
+
+    #Login to email account
+    username = config.get('account', 'username')
+    password = config.get('account', 'password')
+    if verbose:
+        print('Logging in as', username)
+    try:
+        connection.login(username,password)
+        return connection
+    except Exception as err:
+        print('ERROR:', err)
+
+
+if __name__ == '__main__':
+    with open_connection(verbose=True) as c:
+        print(c)
+#+END_SRC
+
+Our config file should look somehting like this.
+
+#+BEGIN_SRC python :tangle py_read_mail.conf
+
+[server]
+hostname = someimap.server
+
+[account]
+username = someuser
+password = SECRETP4$$W0RD
+
+#+END_SRC
+
+For security purposes storing the password in the =.conf= file is not a good idea.
+We should really get the password like this.
+
+#+BEGIN_SRC python :tangle no
+import getpass
+password = getpass.getpass('Password: ')
+#+END_SRC
+
+This would allow a user to enter a password without it being displayed or stored in plaintext.
+I'm going to ignore that for the example though.
+
+** Now let's search through the mail account for messages
+
+We'll continue to use the =imaplib= library and we'll also use our connect fuction inside of =imap-connect.py=
+Let's start by enumerating what folders are available in the mail account.
+
+This block will
+1. Open a connection to the imap server using the connection example above
+2. Dump a list of folders to stdout
+
+#+BEGIN_SRC python :tangle list_email_folders.py
+import imaplib
+from pprint import pprint
+from imap_connect import open_connection
+
+with open_connection() as c:
+    typ, data = c.list()
+    print('Response code:', typ)
+    print('Response:')
+    pprint(data)
+#+END_SRC
+
+The list that gets dumped to stdout is a series of strings.
+1. flags
+2. hierarchy delimiter
+3. folder name
+
+Likely for our purposes though we'll only need to know about one folder.
+There will be an account created specifically for this automation after all.
+Let's assume the folder is called =INBOX=.
+
+How do we list emails in a specific folder?
+How do we verify that an email has an attachment?
+How do we extract that attachment for further processing?
+
+To list emails in the folder we need to 'select' the folder first.
+This block will tell the imap server which folder we want to work with then print to stdout how many messages we have in that folder.
+
+#+BEGIN_SRC python :tangle imap_select.py
+
+import imaplib
+import imaplib_connect
+
+with imaplib_connect.open_connection() as c:
+    typ, data = c.select('INBOX')
+    print(typ, data)
+    num_msg = int(data[0])
+    print('There are {} messages in INBOX'.format(num_msg))
+
+#+END_SRC
+
+Now that we've selected a folder let's search for emails.
+Per section 6.4.4 of RFC 3501 there are quite a few search criteria that can be used.
+For our automation we likely only care about =UNSEEN= because we'll mark already processed messages as seen.
+
+This block will select a folder and then print message IDs of =UNSEEN= messages.
+
+#+BEGIN_SRC python :tangle list-unseen-mail.py
+
+import imaplib
+from imaplib_connect import open_connection
+
+with imaplib_connect.open_connection() as c:
+    typ, data = c.select('INBOX')
+    typ, msg_ids = c.search(None, '(UNSEEN)',)
+    print('Message IDs:', msg_ids)
+
+#+END_SRC
+
+With these message IDs we can =fetch= the messages and process them.
