@@ -60,7 +60,7 @@ class mailer:
                 msg['Subject'] = msgsubject
                 msg['From'] = fromaddr
                 msg['To'] = toaddr
-                msg['Body'] = msgbody
+                msg.set_content(msgbody)
                 with open(msgfile, 'rb') as fp:
                     msgfile_data = fp.read()
                 msg.add_attachment(msgfile_data, maintype='audio', subtype='x-wav')
