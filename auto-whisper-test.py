@@ -61,7 +61,9 @@ class mailer:
                 msg['From'] = fromaddr
                 msg['To'] = toaddr
                 msg['Body'] = msgbody
-                msg.add_attachment(msgfile, maintype='audio', subtype='x-wav')
+                with open(msgfile, 'rb') as fp:
+                    msgfile_data = fp.read()
+                msg.add_attachment(msgfile_data, maintype='audio', subtype='x-wav')
 
                 with smtplib.SMTP(mailserver) as s:
                     s.send_message(msg)
