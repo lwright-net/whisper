@@ -1,10 +1,10 @@
-import time
-from watchdog.observers import Observer
-from watchdog.events import FileSystemEventHandler
-import whisper
-import mimetypes
-import smtplib
-from email.message import EmailMessage
+import time #standard python lib
+from watchdog.observers import Observer #pip install watchdog
+from watchdog.events import FileSystemEventHandler #pip install watchdog
+import whisper #pip install git+https://github.com/openai/whisper.git && apt install ffmpeg
+import mimetypes #standard python lib
+import smtplib #standard python lib
+from email.message import EmailMessage #standard python lib
 
 whispermodel = 'medium' # tiny, base, small, medium, large
 watcherdir = '.' #directory to be watched
@@ -44,13 +44,8 @@ class MyHandler(FileSystemEventHandler):
             print(event.src_path)
             print(mimetypes.guess_type(event.src_path))
             newfiletype = mimetypes.guess_type(event.src_path)[0]
-            if  newfiletype == "audio/x-wav": #some code to check if audio
+            if  newfiletype == "audio/x-wav": #check if audio in .wav format voicemail system should only produce .wav
                 result = model.transcribe(event.src_path)
-                #f = open(event.src_path+".txt", "w+")#some code to write the result to a file
-                #f.write(result["text"])
-                #f.close()
-                #print("wrote " + event.src_path + ".txt")#some code to  print confirmation of transcription
-                #mailer.sendmsg('subject with phone number', 'noreply@autotranscript', 'support@ticketsystem', result, event.src_path)
                 mailer.sendmsg('somesubject', mailfrom, mailto, result, event.src_path)
 
 class mailer:
