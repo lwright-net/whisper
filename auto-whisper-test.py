@@ -39,29 +39,27 @@ class Watcher:
 class MyHandler(FileSystemEventHandler):
 
     def on_any_event(self, event):
-        #put our code here
         if event.event_type == "created":
             print(event.src_path)
             print(mimetypes.guess_type(event.src_path))
             newfiletype = mimetypes.guess_type(event.src_path)[0]
             if  newfiletype == "audio/x-wav": #check if audio in .wav format voicemail system should only produce .wav
                 result = model.transcribe(event.src_path)
-                mailer.sendmsg('somesubject', mailfrom, mailto, result, event.src_path)
+                send_msg('somesubject', result, event.src_path)
 
-class mailer:
 
-    def send_msg(msgsubject, fromaddr, toaddr, msgbody, msgfile):
-                msg = EmailMessage()
-                msg['Subject'] = msgsubject
-                msg['From'] = fromaddr
-                msg['To'] = toaddr
-                msg.set_content(msgbody)
-                with open(msgfile, 'rb') as fp:
-                    msgfile_data = fp.read()
-                msg.add_attachment(msgfile_data, maintype='audio', subtype='x-wav')
+def send_msg(msgsubject, msgbody, msgfile):
+            msg = EmailMessage()
+            msg['Subject'] = msgsubject
+            msg['From'] = mailfrom
+            msg['To'] = mailto
+            msg.set_content(msgbody)
+            with open(msgfile, 'rb') as fp:
+                msgfile_data = fp.read()
+            msg.add_attachment(msgfile_data, maintype='audio', subtype='x-wav')
 
-                with smtplib.SMTP(mailserver) as s:
-                    s.send_message(msg)
+            with smtplib.SMTP(mailserver) as s:
+                s.send_message(msg)
 
 if __name__=="__main__":
     w = Watcher(".", MyHandler())
